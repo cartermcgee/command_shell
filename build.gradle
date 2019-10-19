@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+run {
+    standardInput = System.in
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'CommandShell'
+    }
+}
+
+mainClassName = 'CommandShell'
+
