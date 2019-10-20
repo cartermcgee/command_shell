@@ -53,6 +53,9 @@ public class CommandShell {
         return matchList.toArray(new String[matchList.size()]);
     }
 
+    /**
+    * interperets command array and calls the functions associated with those commands, validating data if needed
+    */
     public static void interperetCommand(String[] command, ArrayList<String> commandHistory){
         switch(command[0]){
             case "exit":
