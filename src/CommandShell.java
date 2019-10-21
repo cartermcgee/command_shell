@@ -81,6 +81,9 @@ public class CommandShell {
 		printCommandHistory(commandHistory);
 		break;
 
+	    case "pwd":
+		printWorkingDir();
+		break;
 	    default:
 		System.out.println("Invalid Command: " + command[0]);
 		return;
@@ -117,5 +120,9 @@ public class CommandShell {
 	    System.out.println(i + ": " + commandHistory.get(i - 1));
 	}
 	System.out.println();
+    }
+
+    public static void printWorkingDir(){
+	System.out.println(System.getProperty("user.dir"));
     }
 }
