@@ -133,10 +133,16 @@ public class CommandShell {
 	System.out.println();
     }
 
+    /**
+    * Prints out the current working directory
+    */
     public static void printWorkingDir(){
 	System.out.println(System.getProperty("user.dir"));
     }
 
+    /**
+    * changes the cuurent directory for the user
+    */
     public static void changeDir(String targetDir){
 	String home = System.getProperty("user.home");
 	String currentDir = System.getProperty("user.dir");
