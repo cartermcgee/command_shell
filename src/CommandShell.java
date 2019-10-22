@@ -5,6 +5,7 @@ import java.lang.*;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.File;
+import java.util.Date;
 
 public class CommandShell {
 
@@ -97,6 +98,14 @@ public class CommandShell {
 		}
 		break;
 
+	    case "ls":
+		if(command.length == 1){
+                    list("");
+                }else{
+                    list(command[1]);
+                }
+		break;
+
 	    default:
 		System.out.println("Invalid Command: " + command[0]);
 		return;
@@ -165,11 +174,57 @@ public class CommandShell {
 	    String newDir = currentDir + "/" + targetDir;
 	    File f = new File(newDir);
 
-	    if(f.exists() && f.isDirectory()){
+	    if(f.exists() && f.isDirectory())
 		System.setProperty("user.dir", newDir);
-	    }else{
+	    else
 		System.out.println("Error: " + targetDir + " is not a valid directory.");
+	}
+    }
+
+    /**
+    * Lists all the files in the user's cuurent directory, use arg -l for a more detailed output
+    */
+    public static void list(String arg){
+	File dir = new File(System.getProperty("user.dir"));
+        File[] fileList = dir.listFiles();
+
+	if(arg.equals("")){ // simple output
+	    for(File f : fileList){
+		System.out.print(f.getName() + "\t");
 	    }
+	    System.out.println();
+	}
+	else if(arg.equals("-l")){ // detailed output
+	    for(File f : fileList){
+	        String permissions = "";
+	        if(f.isDirectory())
+		    permissions += "d";
+	        else
+		    permissions += "-";
+
+	        if(f.canRead())
+		    permissions += "r";
+	        else
+		    permissions += "-";
+
+	        if(f.canWrite())
+		    permissions += "w";
+	        else
+		    permissions += "-";
+
+	        if(f.canExecute())
+		    permissions += "x";
+	        else
+		    permissions += "-";
+
+	        Date lastModified = new Date(f.lastModified());
+	        System.out.println(permissions + "\t" + f.length() + "\t" + lastModified.toString() + "\t" + f.getName());
+	    }
+	}else{
+	    System.out.println("Invalid argument: " + arg);
+
 	}
     }
 }
+
+
