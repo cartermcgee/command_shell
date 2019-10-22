@@ -111,7 +111,8 @@ public class CommandShell {
 		break;
 
 	    default:
-		startExternalProcess(command);
+		ArrayList<String> commandList = new ArrayList<>(Arrays.asList(command)); // convert commmand to arraylist to easily manipulate it
+		startExternalProcess(commandList);
 		return;
         }
     }
@@ -251,20 +252,28 @@ public class CommandShell {
     /**
     * Attempts to start an external process given the command
     */
-    public static void startExternalProcess(String[] command){
+    public static void startExternalProcess(ArrayList<String> command){
+	boolean waitForProcess = true;
+	if(command.get(command.size() - 1).equals("&")){ // if the last element in the array is &
+	    command.remove(command.size() - 1);
+	    waitForProcess = false;
+	}
+
 	ProcessBuilder pb = new ProcessBuilder(command);
 	pb.directory(new File(System.getProperty("user.dir")));
 	pb.inheritIO();
 
 	try{
 	    Process p = pb.start();
-	    long start = System.currentTimeMillis();
-            p.waitFor();
-            long end = System.currentTimeMillis();
-            incrementPTime(end - start);
+	    if(waitForProcess){ // waits for child process and counts how much time is spent waiting
+		long start = System.currentTimeMillis();
+                p.waitFor();
+                long end = System.currentTimeMillis();
+                incrementPTime(end - start);
+	    }
 
         }catch(IOException ioe){
-            System.out.println("Invalid Command: " + command[0]);
+            System.out.println("Invalid Command: " + command.get(0));
         }catch(InterruptedException ie){
             System.out.println("Error: thread interrupted");
         }
