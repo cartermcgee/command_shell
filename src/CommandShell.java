@@ -1,13 +1,11 @@
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.Scanner;
 import java.lang.*;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.io.File;
-import java.util.Date;
+import java.util.*;
+import java.io.*;
+import java.util.regex.*;
 
 public class CommandShell {
+
+    private static long ptime;
 
     /**
     * Main prompt loop.
@@ -106,8 +104,14 @@ public class CommandShell {
                 }
 		break;
 
+	    case "ptime":
+		System.out.print("Total time in child processes: ");
+		getPTime();
+		System.out.println(" seconds");
+		break;
+
 	    default:
-		System.out.println("Invalid Command: " + command[0]);
+		startExternalProcess(command);
 		return;
         }
     }
@@ -187,14 +191,17 @@ public class CommandShell {
     public static void list(String arg){
 	File dir = new File(System.getProperty("user.dir"));
         File[] fileList = dir.listFiles();
+	int fileCount = fileList.length;
 
 	if(arg.equals("")){ // simple output
+	    System.out.println("Total: " + fileCount);
 	    for(File f : fileList){
 		System.out.print(f.getName() + "\t");
 	    }
 	    System.out.println();
 	}
 	else if(arg.equals("-l")){ // detailed output
+	    System.out.println("Total: " + fileCount);
 	    for(File f : fileList){
 	        String permissions = "";
 	        if(f.isDirectory())
@@ -224,6 +231,43 @@ public class CommandShell {
 	    System.out.println("Invalid argument: " + arg);
 
 	}
+    }
+
+    /**
+    * Prints the time spent performing child processes to the screen
+    */
+    public static void getPTime(){
+	double seconds = ptime / 1000.0;
+	System.out.printf("%.4f", seconds);
+    }
+
+    /**
+    * Increments variable ptime, which represents the time spent performing child processes
+    */
+    public static void incrementPTime(long increment){
+	ptime += increment;
+    }
+
+    /**
+    * Attempts to start an external process given the command
+    */
+    public static void startExternalProcess(String[] command){
+	ProcessBuilder pb = new ProcessBuilder(command);
+	pb.directory(new File(System.getProperty("user.dir")));
+	pb.inheritIO();
+
+	try{
+	    Process p = pb.start();
+	    long start = System.currentTimeMillis();
+            p.waitFor();
+            long end = System.currentTimeMillis();
+            incrementPTime(end - start);
+
+        }catch(IOException ioe){
+            System.out.println("Invalid Command: " + command[0]);
+        }catch(InterruptedException ie){
+            System.out.println("Error: thread interrupted");
+        }
     }
 }
 
