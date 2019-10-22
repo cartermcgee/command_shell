@@ -3,6 +3,8 @@ import java.util.regex.Pattern;
 import java.util.Scanner;
 import java.lang.*;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.io.File;
 
 public class CommandShell {
 
@@ -84,6 +86,15 @@ public class CommandShell {
 	    case "pwd":
 		printWorkingDir();
 		break;
+
+	    case "cd":
+		if(command.length == 1){
+		    changeDir("");
+		}else{
+   		    changeDir(command[1]);
+		}
+		break;
+
 	    default:
 		System.out.println("Invalid Command: " + command[0]);
 		return;
@@ -124,5 +135,25 @@ public class CommandShell {
 
     public static void printWorkingDir(){
 	System.out.println(System.getProperty("user.dir"));
+    }
+
+    public static void changeDir(String targetDir){
+	String home = System.getProperty("user.home");
+	String currentDir = System.getProperty("user.dir");
+	if(targetDir.equals("")){ // change to home directory 'cd'
+	    System.setProperty("user.dir", home);
+	}else if(targetDir.equals("..")){ // change to parent directory 'cd ..'
+	    Pattern p = Pattern.compile(".*/"); // regex that truncates last dir from a pathname
+	    Matcher m = p.matcher(currentDir);
+	    while(m.find()){
+		if(m.group() != null){
+		    System.setProperty("user.dir", m.group());
+		}
+	    }
+	}else{ // change to child directory 'cd myDir'
+	    String newDir = currentDir + "/" + targetDir;
+	    System.setProperty("user.dir", newDir);
+	}
+
     }
 }
