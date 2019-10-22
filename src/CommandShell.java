@@ -20,6 +20,7 @@ public class CommandShell {
 	    System.out.print("[" + System.getProperty("user.dir") + "]: "); // prints current dir in the command prompt
 	    rawCommand = sc.nextLine();
 	    commandHistory.add(rawCommand);
+
 	    if(rawCommand.contains("\"") || rawCommand.contains("'")){ // if command contains double quote (") or single quote (') it gets parsed differently
 		command = splitCommand(rawCommand);
 	    }else{
@@ -39,6 +40,7 @@ public class CommandShell {
 
         Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
         Matcher regexMatcher = regex.matcher(command);
+
         while (regexMatcher.find()) {
             if (regexMatcher.group(1) != null) {
                 // Add double-quoted string without the quotes
@@ -146,20 +148,28 @@ public class CommandShell {
     public static void changeDir(String targetDir){
 	String home = System.getProperty("user.home");
 	String currentDir = System.getProperty("user.dir");
+
 	if(targetDir.equals("")){ // change to home directory 'cd'
 	    System.setProperty("user.dir", home);
 	}else if(targetDir.equals("..")){ // change to parent directory 'cd ..'
 	    Pattern p = Pattern.compile(".*/"); // regex that truncates last dir from a pathname
 	    Matcher m = p.matcher(currentDir);
+
 	    while(m.find()){
 		if(m.group() != null){
-		    System.setProperty("user.dir", m.group());
+		    String parentDir = m.group().substring(0, m.group().length() - 1); // truncate last slash / from the string
+		    System.setProperty("user.dir", parentDir);
 		}
 	    }
 	}else{ // change to child directory 'cd myDir'
 	    String newDir = currentDir + "/" + targetDir;
-	    System.setProperty("user.dir", newDir);
-	}
+	    File f = new File(newDir);
 
+	    if(f.exists() && f.isDirectory()){
+		System.setProperty("user.dir", newDir);
+	    }else{
+		System.out.println("Error: " + targetDir + " is not a valid directory.");
+	    }
+	}
     }
 }
