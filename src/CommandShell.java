@@ -1,4 +1,4 @@
-import java.lang.*;
+	import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.util.regex.*;
@@ -16,6 +16,7 @@ public class CommandShell {
 	String rawCommand;
 	String[] command;
 	ArrayList<String> commandHistory = new ArrayList<>();
+
 	while(true){
 	    System.out.print("[" + System.getProperty("user.dir") + "]: "); // prints current dir in the command prompt
 	    rawCommand = sc.nextLine();
@@ -61,7 +62,12 @@ public class CommandShell {
     * interperets command array and calls the functions associated with those commands, validating data if needed
     */
     public static void interperetCommand(String[] command, ArrayList<String> commandHistory){
-        switch(command[0]){
+        if(commandHistory.get(commandHistory.size() - 1).contains("|")){
+	    pipeCommands(commandHistory.get(commandHistory.size() - 1));
+	    return;
+	}
+
+	switch(command[0]){
             case "exit":
 	    case "quit":
 	    case "q":
@@ -191,7 +197,6 @@ public class CommandShell {
         File[] fileList = dir.listFiles();
 	int fileCount = fileList.length;
 
-	System.out.println("Total: " + fileCount);
 	for(File f : fileList){
 	    String permissions = "";
 	    if(f.isDirectory())
@@ -214,9 +219,9 @@ public class CommandShell {
 	    else
 		permissions += "-";
 
-	    String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(f.lastModified()));
+	    String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(f.lastModified())); // jank
 	    System.out.print(permissions + "\t");
-	    System.out.printf("%, 5d", f.length());
+	    System.out.printf("%5d", f.length());
 	    System.out.print("\t" + date + "\t");
 	    System.out.println(f.getName());
         }
@@ -265,6 +270,49 @@ public class CommandShell {
         }catch(InterruptedException ie){
             System.out.println("Error: thread interrupted");
         }
+    }
+
+    /**
+    * Pipes the output of the first external command into the input of the left external command
+    * Code adapted from Erik's piazza answer: https://usu.instructure.com/courses/547959/external_tools/3354
+    */
+    public static void pipeCommands(String command){
+	String[] commands = command.split("\\s[|]\\s", 2); // commands[0] is the left command, command[1] is the right command
+
+	ProcessBuilder pbLeft = new ProcessBuilder(commands[0].split(" "));
+	pbLeft.directory(new File(System.getProperty("user.dir")));
+	pbLeft.redirectInput(ProcessBuilder.Redirect.INHERIT);
+
+	ProcessBuilder pbRight = new ProcessBuilder(commands[1].split(" "));
+	pbRight.directory(new File(System.getProperty("user.dir")));
+	pbRight.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+	try{
+	    Process left = pbLeft.start();
+            Process right = pbRight.start();
+
+            java.io.InputStream in = left.getInputStream();
+            java.io.OutputStream out = right.getOutputStream();
+
+            int c;
+            while ((c = in.read()) != -1) {
+                    out.write(c);
+            }
+
+            out.flush();
+            out.close();
+
+            long start = System.currentTimeMillis();
+	    left.waitFor();
+            right.waitFor();
+	    long end = System.currentTimeMillis();
+	    incrementPTime(end - start);
+
+	}catch(IOException ioe){
+	    System.out.println("Invalid Command(s): " + command);
+	}catch(InterruptedException ie){
+	    System.out.println("Error: thread interrupted");
+	}
     }
 }
 
