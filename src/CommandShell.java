@@ -2,6 +2,7 @@ import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.util.regex.*;
+import java.text.DateFormat;
 
 public class CommandShell {
 
@@ -96,12 +97,8 @@ public class CommandShell {
 		}
 		break;
 
-	    case "ls":
-		if(command.length == 1){
-                    list("");
-                }else{
-                    list(command[1]);
-                }
+	    case "list":
+		list();
 		break;
 
 	    case "ptime":
@@ -189,49 +186,40 @@ public class CommandShell {
     /**
     * Lists all the files in the user's cuurent directory, use arg -l for a more detailed output
     */
-    public static void list(String arg){
+    public static void list(){
 	File dir = new File(System.getProperty("user.dir"));
         File[] fileList = dir.listFiles();
 	int fileCount = fileList.length;
 
-	if(arg.equals("")){ // simple output
-	    System.out.println("Total: " + fileCount);
-	    for(File f : fileList){
-		System.out.print(f.getName() + "\t");
-	    }
-	    System.out.println();
-	}
-	else if(arg.equals("-l")){ // detailed output
-	    System.out.println("Total: " + fileCount);
-	    for(File f : fileList){
-	        String permissions = "";
-	        if(f.isDirectory())
-		    permissions += "d";
-	        else
-		    permissions += "-";
+	System.out.println("Total: " + fileCount);
+	for(File f : fileList){
+	    String permissions = "";
+	    if(f.isDirectory())
+		permissions += "d";
+	    else
+		permissions += "-";
 
-	        if(f.canRead())
-		    permissions += "r";
-	        else
-		    permissions += "-";
+	    if(f.canRead())
+		permissions += "r";
+	    else
+		permissions += "-";
 
-	        if(f.canWrite())
-		    permissions += "w";
-	        else
-		    permissions += "-";
+	    if(f.canWrite())
+		permissions += "w";
+	    else
+		permissions += "-";
 
-	        if(f.canExecute())
-		    permissions += "x";
-	        else
-		    permissions += "-";
+	    if(f.canExecute())
+		permissions += "x";
+	    else
+		permissions += "-";
 
-	        Date lastModified = new Date(f.lastModified());
-	        System.out.println(permissions + "\t" + f.length() + "\t" + lastModified.toString() + "\t" + f.getName());
-	    }
-	}else{
-	    System.out.println("Invalid argument: " + arg);
-
-	}
+	    String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(f.lastModified()));
+	    System.out.print(permissions + "\t");
+	    System.out.printf("%, 5d", f.length());
+	    System.out.print("\t" + date + "\t");
+	    System.out.println(f.getName());
+        }
     }
 
     /**
